@@ -1,0 +1,39 @@
+{
+  "format": "javascript-playground-project",
+  "version": 3,
+  "exportedAt": "2026-10-04T08:19:11.619Z",
+  "project": {
+    "version": 3,
+    "activePath": "/index.html",
+    "files": [
+      {
+        "path": "/index.html",
+        "content": "\n    <script>\n\n    function getStudentResult()\n    {\n      return new Promise ((resolve, reject) => {\n       \n\n        setTimeout(() => {\n          const success = true;\n\n          if(success){\n            resolve(\n      {\n        id: \"23-53060-3\",\n        name: \"Tahmid\",\n        department : \"CSE\",\n        marks:85\n      })\n          }\n      else{ reject(\"Failed to retrieve student result\")}\n        } ,3000);\n      });\n    }\n\n    async function displayResult()\n{\n  console.log(\"Getting Student Result..........\");\n  try{\n    const student= await getStudentResult();\n    console.log(\"Student result received\");\n    console.log(\"ID:\" ,student.id);\n    console.log(\"Name:\", student.name);\n    console.log(\"Department:\", student.department);\n    console.log(\"Marks:\", student.marks);\n\n  }\n  catch(error)\n  {\n    console.log(\"Error:\", error);\n  }\nfinally{console.log(\"Result Processing Completed\")};\n}\ndisplayResult();\n\n    </script>\n\n",
+        "language": "html"
+      },
+      {
+        "path": "/css/style.css",
+        "content": "body {\n  margin: 0;\n  padding: 32px;\n  font-family: system-ui, sans-serif;\n  color: #0f172a;\n  background: #f8fafc;\n}\n\n.app {\n  max-width: 640px;\n  margin: 0 auto;\n}\n",
+        "language": "css"
+      },
+      {
+        "path": "/js/main.js",
+        "content": "import { greet } from \"./utils.js\";\n\nconst user = {\n  name: \"JavaScript Learner\",\n  role: \"developer\",\n};\n\nconsole.log(greet(user.name));",
+        "language": "javascript"
+      },
+      {
+        "path": "/js/utils.js",
+        "content": "export function greet(name) {\n  return `Hello, !`;\n}\n",
+        "language": "javascript"
+      }
+    ],
+    "folders": [
+      {
+        "path": "/css"
+      },
+      {
+        "path": "/js"
+      }
+    ]
+  }
+}
