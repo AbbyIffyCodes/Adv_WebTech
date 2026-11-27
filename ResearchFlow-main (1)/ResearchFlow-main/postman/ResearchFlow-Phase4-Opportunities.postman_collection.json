@@ -1,0 +1,600 @@
+{
+  "info": {
+    "name": "ResearchFlow Phase 4 - Opportunities",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Uses the already-promoted sample supervisor and the Amrin sample student from Phase 3. Set local passwords in Variables if different. Send 01–14 manually in order. 02 creates a new post and captures its ID; skip on reruns to reuse the saved post. Reset an already-open post by creating a fresh draft if you need to demonstrate 05 again. 14 leaves the post open for the later selection workflow. No application, supervision or capacity reservation is performed by this collection. Passwords are fake sample values; no tokens are included."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:5001",
+      "type": "string"
+    },
+    {
+      "key": "supervisorEmail",
+      "value": "supervisor@example.com",
+      "type": "string"
+    },
+    {
+      "key": "supervisorPassword",
+      "value": "Supervisor@12345",
+      "type": "string"
+    },
+    {
+      "key": "studentEmail",
+      "value": "amrin.phase3@example.com",
+      "type": "string"
+    },
+    {
+      "key": "studentPassword",
+      "value": "AmrinTest@12345",
+      "type": "string"
+    },
+    {
+      "key": "supervisorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "studentToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supervisorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "opportunityId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "futureDeadline",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Supervisor recruitment and student discovery",
+      "item": [
+        {
+          "name": "01 Supervisor login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{supervisorEmail}}\",\n  \"password\": \"{{supervisorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisorToken',pm.response.json().accessToken);",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisorId',pm.response.json().user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 Create draft research opportunity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/opportunities",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Bangla NLP Research Opportunity\",\n  \"description\": \"Work on classifying Bangla research abstracts by topic.\",\n  \"criteria\": \"Interest in NLP, basic Python skills and time for weekly research.\",\n  \"places\": 4,\n  \"deadline\": \"{{futureDeadline}}\",\n  \"areaTags\": [\n    \"Artificial Intelligence\",\n    \"NLP\"\n  ],\n  \"requiredSkills\": [\n    \"Python\"\n  ],\n  \"preferredSkills\": [\n    \"TypeScript\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('futureDeadline',new Date(Date.now()+30*86400000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('opportunityId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 Read my supervisor posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/opportunities/mine",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 Amrin sample student login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('studentToken',pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 Student cannot read draft",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/opportunities/{{opportunityId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 404',()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Supervisor opens applications",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/opportunities/{{opportunityId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"open\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 Student reads open opportunity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/opportunities/{{opportunityId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Post is accepting applications',()=>pm.expect(pm.response.json().acceptingApplications).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 Filter opportunities by NLP and Python",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/opportunities?researchInterest=NLP&skill=Python&supervisorId={{supervisorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 Student cannot edit supervisor post",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/opportunities/{{opportunityId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unauthorized edit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 403',()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 Reject zero places",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/opportunities/{{opportunityId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"places\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 Supervisor edits criteria",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/opportunities/{{opportunityId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"criteria\": \"Basic Python skills, interest in Bangla NLP and availability for weekly research meetings.\",\n  \"preferredSkills\": [\n    \"TypeScript\",\n    \"Machine Learning\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 Supervisor closes applications",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/opportunities/{{opportunityId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Closed post stops applications',()=>pm.expect(pm.response.json().acceptingApplications).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 Student directory excludes this closed post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/opportunities?supervisorId={{supervisorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Closed post absent',()=>pm.expect(pm.response.json().items.some(p=>p.id===pm.collectionVariables.get('opportunityId'))).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 Reopen for the next application phase",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/opportunities/{{opportunityId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"open\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,678 @@
+{
+  "info": {
+    "name": "ResearchFlow Phase 6 - Private Submissions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Keep the Phase 5 pairing active. Run 01–17 manually in order. For multipart requests 05,12,13 check Body > form-data and select the supplied local sample files if Postman does not resolve imported paths. Keep files fields as File, other fields as Text; let Postman set Content-Type including its boundary. 07/10 intentionally return 403. Downloads may show binary data or the Preview tab; use Send and Download to save a copy. Request 15 is JSON with optional review attachments omitted. Reruns must follow the actual latest version state; do not repeat a final review. All names in file examples are illustrative, not authorship records. No tokens are included."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:5001",
+      "type": "string"
+    },
+    {
+      "key": "leaderEmail",
+      "value": "naimul.phase1@example.com",
+      "type": "string"
+    },
+    {
+      "key": "leaderPassword",
+      "value": "Sample@12345",
+      "type": "string"
+    },
+    {
+      "key": "supervisorEmail",
+      "value": "supervisor@example.com",
+      "type": "string"
+    },
+    {
+      "key": "supervisorPassword",
+      "value": "Supervisor@12345",
+      "type": "string"
+    },
+    {
+      "key": "outsiderEmail",
+      "value": "amrin.phase3@example.com",
+      "type": "string"
+    },
+    {
+      "key": "outsiderPassword",
+      "value": "AmrinTest@12345",
+      "type": "string"
+    },
+    {
+      "key": "leaderToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supervisorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "outsiderToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "submissionV1",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "submissionV2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pdfFileId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Versioned private proposals and supervisor reviews",
+      "item": [
+        {
+          "name": "01 Group leader login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{leaderEmail}}\",\n  \"password\": \"{{leaderPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('leaderToken',pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 Read my confirmed project",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/mine",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "const p=pm.response.json().project;pm.test('Project has active supervision',()=>pm.expect(p.status).to.eql('under_supervision'));if(p)pm.collectionVariables.set('projectId',p.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 Supervisor login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{supervisorEmail}}\",\n  \"password\": \"{{supervisorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisorToken',pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 Amrin sample outsider login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{outsiderEmail}}\",\n  \"password\": \"{{outsiderPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('outsiderToken',pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 Submit v1 with PDF and CSV - check file selections",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/submissions",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "revisionNote",
+                  "value": "First proposal version with a sample dataset.",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "E:/AIUB/Fall 26-27 (sem 10)/Adv Webtech/AWT-Project/postman/samples/Mayesha_Proposal_v1.pdf"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "E:/AIUB/Fall 26-27 (sem 10)/Adv Webtech/AWT-Project/postman/samples/Amrin_Dataset_v1.csv"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('submissionV1',pm.response.json().id);",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('pdfFileId',pm.response.json().files.find(f=>f.fileType==='application/pdf').id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Supervisor reads the submitted bundle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/submissions/{{submissionV1}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 Outsider cannot read private submission",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/submissions/{{submissionV1}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{outsiderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 403',()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 Supervisor downloads the PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/files/{{pdfFileId}}/download",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 Supervisor previews the PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/files/{{pdfFileId}}/preview",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 Outsider cannot download the PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/files/{{pdfFileId}}/download",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{outsiderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 403',()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 Supervisor starts review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/submissions/{{submissionV1}}/start-review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 Supervisor requests revision with feedback attachment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/submissions/{{submissionV1}}/reviews",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "decision",
+                  "value": "revision_required",
+                  "type": "text"
+                },
+                {
+                  "key": "comments",
+                  "value": "Expand the methodology, dataset description and evaluation plan.",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "E:/AIUB/Fall 26-27 (sem 10)/Adv Webtech/AWT-Project/postman/samples/Tahmid_Review_Feedback.csv"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 Submit v2 - check file selection",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/submissions",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "revisionNote",
+                  "value": "Expanded methodology and evaluation plan after supervisor feedback.",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "E:/AIUB/Fall 26-27 (sem 10)/Adv Webtech/AWT-Project/postman/samples/Mayesha_Proposal_v2.pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('submissionV2',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 Old v1 retains its files and review",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/submissions/{{submissionV1}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Old review retained',()=>pm.expect(pm.response.json().status).to.eql('revision_required'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 Supervisor approves v2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/submissions/{{submissionV2}}/reviews",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"comments\": \"The revised proposal is approved. Proceed to milestone planning.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 Read version history and latest proposal state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/submissions",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Latest proposal approved',()=>pm.expect(pm.response.json().proposalStatus).to.eql('approved'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 Read submission and review activity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/activity",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

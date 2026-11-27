@@ -1,0 +1,618 @@
+{
+  "info": {
+    "name": "ResearchFlow Phase 7 - Milestones",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Keep active supervision and latest proposal approval from Phase 6. Send 01–15 manually. 04 should show no existing plan for a fresh demonstration; 05 and 06 create two milestones. Repeating them changes the denominator, so do not recreate a completed plan. 09 uses multipart: revisionNote and milestoneId Text, files File. Select supplied Amrin_Dataset_v1.csv locally if needed. 12 expects 50% only with two total milestones and one approved. Leader submits evidence on behalf of the group; each task has an assigned member owner. No tokens are stored."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:5001",
+      "type": "string"
+    },
+    {
+      "key": "leaderEmail",
+      "value": "naimul.phase1@example.com",
+      "type": "string"
+    },
+    {
+      "key": "leaderPassword",
+      "value": "Sample@12345",
+      "type": "string"
+    },
+    {
+      "key": "supervisorEmail",
+      "value": "supervisor@example.com",
+      "type": "string"
+    },
+    {
+      "key": "supervisorPassword",
+      "value": "Supervisor@12345",
+      "type": "string"
+    },
+    {
+      "key": "leaderToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supervisorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "leaderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "milestoneId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "evidenceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "futureDeadline",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Milestone planning, evidence and approved progress",
+      "item": [
+        {
+          "name": "01 Leader login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{leaderEmail}}\",\n  \"password\": \"{{leaderPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('leaderToken',pm.response.json().accessToken);",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('leaderId',pm.response.json().user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 Supervisor login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{supervisorEmail}}\",\n  \"password\": \"{{supervisorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisorToken',pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 Read my active project",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/mine",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('projectId',pm.response.json().project.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 Check current milestone plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/milestones",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 Supervisor creates dataset milestone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/milestones",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prepare labelled dataset\",\n  \"description\": \"Collect samples and check research labels.\",\n  \"ownerId\": \"{{leaderId}}\",\n  \"dueDate\": \"{{futureDeadline}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('futureDeadline',new Date(Date.now()+7*86400000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('milestoneId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Supervisor creates baseline milestone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/milestones",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Evaluate baseline model\",\n  \"description\": \"Train a baseline and report accuracy and macro F1.\",\n  \"ownerId\": \"{{leaderId}}\",\n  \"dueDate\": \"{{futureDeadline}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 Assigned owner starts dataset task",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/milestones/{{milestoneId}}/start",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 Read plan and zero approved progress",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/milestones",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 Submit dataset evidence - select sample CSV",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/submissions",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "revisionNote",
+                  "value": "Labelled dataset evidence for supervisor review.",
+                  "type": "text"
+                },
+                {
+                  "key": "milestoneId",
+                  "value": "{{milestoneId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "E:/AIUB/Fall 26-27 (sem 10)/Adv Webtech/AWT-Project/postman/samples/Amrin_Dataset_v1.csv"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('evidenceId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 Evidence awaiting review is not completed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/milestones",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Awaiting review',()=>pm.expect(pm.response.json().progress.awaitingReview).to.be.above(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 Supervisor approves evidence",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/submissions/{{evidenceId}}/reviews",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"comments\": \"Dataset evidence meets the milestone requirements.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 Read approved milestone progress",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/milestones",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('One of two milestones approved',()=>pm.expect(pm.response.json().progress.percentage).to.eql(50));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 Read milestone evidence history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/milestones/{{milestoneId}}/submissions",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 Completed milestone cannot be rewritten",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/milestones/{{milestoneId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Rewrite completed work\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 409',()=>pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 Read milestone activity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/activity",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

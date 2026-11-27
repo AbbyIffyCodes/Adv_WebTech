@@ -1,0 +1,4 @@
+abstract_id,language,research_area,label
+1,Bangla,Natural Language Processing,text classification
+2,Bangla,Machine Learning,document clustering
+3,Bangla,Information Retrieval,search relevance

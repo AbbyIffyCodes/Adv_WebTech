@@ -1,0 +1,13 @@
+# Local settings and generated files
+**/node_modules/
+**/dist/
+**/coverage/
+**/.env
+**/.env.*
+!**/.env.example
+**/*.tsbuildinfo
+**/*.log
+**/uploads/
+**/.researchflow-backups/
+.vscode/
+.DS_Store

@@ -1,0 +1,1102 @@
+{
+  "info": {
+    "name": "ResearchFlow Phase 5 - Selection and Access",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run 01–17 manually using your existing leader, published project, two-member group and open supervisor opportunity. Variables are separate from earlier collections. Do not repeat a completed confirmation; read history or deliberately end it in the optional demonstration before starting again. The coordinator password is intentionally blank: set it locally for that optional folder. Permission checks return allowed:true/false; actual protected files are the next stage. Opening/accepting supervision does not approve a proposal. Sample passwords are fake values, no tokens are stored."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:5001",
+      "type": "string"
+    },
+    {
+      "key": "leaderEmail",
+      "value": "naimul.phase1@example.com",
+      "type": "string"
+    },
+    {
+      "key": "leaderPassword",
+      "value": "Sample@12345",
+      "type": "string"
+    },
+    {
+      "key": "supervisorEmail",
+      "value": "supervisor@example.com",
+      "type": "string"
+    },
+    {
+      "key": "supervisorPassword",
+      "value": "Supervisor@12345",
+      "type": "string"
+    },
+    {
+      "key": "coordinatorEmail",
+      "value": "coordinator@example.com",
+      "type": "string"
+    },
+    {
+      "key": "coordinatorPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "leaderToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supervisorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "coordinatorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "leaderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supervisorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "coordinatorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "groupId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "opportunityId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "requestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invitationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supervisionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supervisorGrantId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "coordinatorGrantId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Application, offer and explicit confirmation",
+      "item": [
+        {
+          "name": "01 Supervisor login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{supervisorEmail}}\",\n  \"password\": \"{{supervisorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisorToken',pm.response.json().accessToken);",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisorId',pm.response.json().user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 Find my open NLP opportunity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/opportunities/mine?researchInterest=NLP",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "const p=pm.response.json().items.find(p=>p.acceptingApplications);pm.test('Open opportunity exists',()=>pm.expect(p).not.to.eql(undefined));if(p)pm.collectionVariables.set('opportunityId',p.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 Group leader login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{leaderEmail}}\",\n  \"password\": \"{{leaderPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('leaderToken',pm.response.json().accessToken);",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('leaderId',pm.response.json().user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 Read my published project",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/mine",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "const p=pm.response.json().project;pm.test('Project exists and summary is published',()=>{pm.expect(p).not.to.eql(null);pm.expect(p.publishedAt).not.to.eql(null);});if(p){pm.collectionVariables.set('projectId',p.id);pm.collectionVariables.set('groupId',p.groupId);}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 Ensure Python is in my actual profile skills",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/profiles/{{leaderId}}/tags",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skills\": [\n    \"Python\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Read supervisor capacity before confirmation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/selection/capacity/{{supervisorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 Supervisor has no document access before consent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/document-access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Document access false',()=>pm.expect(pm.response.json().allowed).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 Leader applies to the opportunity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/selection/applications",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"supervisorId\": \"{{supervisorId}}\",\n  \"opportunityId\": \"{{opportunityId}}\",\n  \"statement\": \"Our group would like to research Bangla abstract classification. We have Python skills and are interested in NLP.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('requestId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 Supervisor offers supervision",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/selection/requests/{{requestId}}/offer",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Offer awaits leader confirmation',()=>pm.expect(pm.response.json().status).to.eql('offered'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 Offer alone gives no document access",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/document-access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Document access false',()=>pm.expect(pm.response.json().allowed).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 Reject confirmation without sharing consent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/selection/requests/{{requestId}}/confirm",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shareFullProposal\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 400',()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 Leader confirms and explicitly grants access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/selection/requests/{{requestId}}/confirm",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shareFullProposal\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisionId',pm.response.json().supervision.id);",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisorGrantId',pm.response.json().accessGrant.id);",
+                  "pm.test('Student places reserved',()=>pm.expect(pm.response.json().supervision.reservedPlaces).to.be.above(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 Read reserved and remaining supervisor places",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/selection/capacity/{{supervisorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 Confirmed supervisor now has document permission",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/document-access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Document access true',()=>pm.expect(pm.response.json().allowed).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 Read selection and supervision history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/selection/requests?projectId={{projectId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 Confirm group membership is locked",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/groups/{{groupId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Membership protected during supervision',()=>pm.expect(pm.response.json().membershipLocked).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 Read decision and permission activity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/activity",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Optional named coordinator consent",
+      "item": [
+        {
+          "name": "18 Coordinator login - set password privately first",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{coordinatorEmail}}\",\n  \"password\": \"{{coordinatorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('coordinatorToken',pm.response.json().accessToken);",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('coordinatorId',pm.response.json().user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "19 Coordinator has no automatic document access",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/document-access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{coordinatorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Document access false',()=>pm.expect(pm.response.json().allowed).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "20 Leader grants named coordinator access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/access-grants",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"granteeId\": \"{{coordinatorId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('coordinatorGrantId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "21 Named coordinator now has access",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/document-access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{coordinatorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Document access true',()=>pm.expect(pm.response.json().allowed).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "22 Leader revokes coordinator grant",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/access-grants/{{coordinatorGrantId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "23 Coordinator permission is removed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/document-access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{coordinatorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Document access false',()=>pm.expect(pm.response.json().allowed).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Optional end and demonstrate supervisor-led selection",
+      "item": [
+        {
+          "name": "24 End current supervision - releases places",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/selection/supervisions/{{supervisionId}}/end",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Demonstrating a fresh supervisor-led invitation and renewed consent.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "25 Previous supervisor loses document permission",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/document-access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Document access false',()=>pm.expect(pm.response.json().allowed).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "26 Supervisor sends a new invitation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/selection/invitations",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"opportunityId\": \"{{opportunityId}}\",\n  \"statement\": \"I would like to supervise your group on Bangla NLP research.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 201',()=>pm.response.to.have.status(201));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('invitationId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "27 Leader accepts invitation with fresh sharing consent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/selection/requests/{{invitationId}}/confirm",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{leaderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shareFullProposal\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisionId',pm.response.json().supervision.id);",
+                  "if(pm.response.code>=200&&pm.response.code<300)pm.collectionVariables.set('supervisorGrantId',pm.response.json().accessGrant.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "28 Supervisor has renewed permission",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/projects/{{projectId}}/document-access",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisorToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected 200',()=>pm.response.to.have.status(200));",
+                  "pm.test('Document access true',()=>pm.expect(pm.response.json().allowed).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

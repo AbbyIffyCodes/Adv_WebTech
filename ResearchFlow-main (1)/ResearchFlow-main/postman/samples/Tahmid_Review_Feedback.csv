@@ -1,0 +1,4 @@
+section,feedback
+Methodology,Explain the baseline model and evaluation plan
+Dataset,Describe sample selection and label quality
+Evaluation,Report accuracy and macro F1
